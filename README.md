@@ -45,6 +45,7 @@ When `COMPANIES_HOUSE_API_KEY` is configured, the search screen uses the live Co
 
 - Search live Companies House company records by company name
 - Choose a returned company and add it to a watchlist
-- View basic company details from the watchlist
+- View company profile, director/officer details, PSC/control details, recent accounts filings, and filing documents
+- Open Companies House filing documents in a new browser window
 - Compare watched companies in a simple table
 - Keep the UI bare bones so all text remains visible
