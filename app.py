@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import base64
 from datetime import date
+import html
 import json
 import os
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
 import pandas as pd
@@ -62,7 +63,12 @@ def init_state() -> None:
 
 
 def companies_house_api_key() -> str:
-    return "192c9ef2-ccf3-40f8-82b8-e7dcef5a5d5d"
+    try:
+        if "COMPANIES_HOUSE_API_KEY" in st.secrets:
+            return str(st.secrets["COMPANIES_HOUSE_API_KEY"])
+    except Exception:
+        pass
+    return os.getenv("COMPANIES_HOUSE_API_KEY", "")
 
 
 def companies_house_get(endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -114,6 +120,94 @@ def normalise_profile(profile: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def format_address(address: dict[str, Any] | None) -> str:
+    if not address:
+        return "No address returned"
+    fields = ["premises", "address_line_1", "address_line_2", "locality", "region", "postal_code", "country"]
+    return ", ".join(str(address.get(field)) for field in fields if address.get(field))
+
+
+def format_month_year(value: dict[str, Any] | None) -> str:
+    if not value:
+        return "Not shown"
+    month = value.get("month")
+    year = value.get("year")
+    if month and year:
+        return f"{int(month):02d}/{year}"
+    return str(year or "Not shown")
+
+
+def parse_date(value: str | None) -> date | None:
+    if not value:
+        return None
+    try:
+        year, month, day = value.split("-")
+        return date(int(year), int(month), int(day))
+    except ValueError:
+        return None
+
+
+def public_document_url(company_number: str, filing: dict[str, Any]) -> str:
+    transaction_id = filing.get("transaction_id")
+    if not transaction_id:
+        return ""
+    encoded_transaction_id = quote(str(transaction_id), safe="")
+    return (
+        "https://find-and-update.company-information.service.gov.uk"
+        f"/company/{company_number}/filing-history/{encoded_transaction_id}"
+        "/document?format=pdf&download=0"
+    )
+
+
+def fetch_officers(company_number: str) -> list[dict[str, Any]]:
+    data = companies_house_get(f"/company/{company_number}/officers", {"items_per_page": 100})
+    return data.get("items", [])
+
+
+def fetch_pscs(company_number: str) -> list[dict[str, Any]]:
+    data = companies_house_get(f"/company/{company_number}/persons-with-significant-control", {"items_per_page": 100})
+    return data.get("items", [])
+
+
+def fetch_filing_history(company_number: str) -> list[dict[str, Any]]:
+    filings: list[dict[str, Any]] = []
+    start_index = 0
+    items_per_page = 100
+    while start_index < 1000:
+        data = companies_house_get(
+            f"/company/{company_number}/filing-history",
+            {"items_per_page": items_per_page, "start_index": start_index},
+        )
+        items = data.get("items", [])
+        filings.extend(items)
+        total_count = data.get("total_count", len(filings))
+        if not items or len(filings) >= total_count:
+            break
+        start_index += items_per_page
+    return filings
+
+
+def filing_description(filing: dict[str, Any]) -> str:
+    description = filing.get("description", "Document filed")
+    values = filing.get("description_values", {})
+    if values:
+        parts = [f"{key}: {value}" for key, value in values.items()]
+        return f"{description} ({', '.join(parts)})"
+    return description
+
+
+def accounts_filings_for_last_five_years(filings: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    oldest_year = date.today().year - 5
+    accounts = []
+    for filing in filings:
+        if filing.get("category") != "accounts":
+            continue
+        filing_date = parse_date(filing.get("date"))
+        if filing_date and filing_date.year >= oldest_year:
+            accounts.append(filing)
+    return accounts
+
+
 def search_companies(query: str) -> list[dict[str, Any]]:
     term = query.strip()
     st.session_state.last_search_error = ""
@@ -122,15 +216,8 @@ def search_companies(query: str) -> list[dict[str, Any]]:
 
     if companies_house_api_key():
         try:
-            data = companies_house_get(
-                "/search/companies",
-                {"q": term, "items_per_page": 100},
-            )
-            return [
-                normalise_search_result(item)
-                for item in data.get("items", [])
-                if item.get("company_number")
-            ]
+            data = companies_house_get("/search/companies", {"q": term, "items_per_page": 100})
+            return [normalise_search_result(item) for item in data.get("items", []) if item.get("company_number")]
         except RuntimeError as exc:
             st.session_state.last_search_error = str(exc)
 
@@ -187,9 +274,7 @@ def add_to_watchlist(company: dict[str, Any]) -> None:
 
 
 def remove_from_watchlist(company_number: str) -> None:
-    st.session_state.watchlist = [
-        number for number in st.session_state.watchlist if number != company_number
-    ]
+    st.session_state.watchlist = [number for number in st.session_state.watchlist if number != company_number]
 
 
 def show_company(company: dict[str, Any]) -> None:
@@ -226,11 +311,7 @@ def page_search() -> None:
             already_watched = company["number"] in st.session_state.watchlist
             if already_watched:
                 st.button("Already in watchlist", disabled=True, use_container_width=True)
-            elif st.button(
-                "Add this company to watchlist",
-                key=f"add-{company['number']}",
-                use_container_width=True,
-            ):
+            elif st.button("Add this company to watchlist", key=f"add-{company['number']}", use_container_width=True):
                 add_to_watchlist(company)
                 st.success(f"Added {company['name']} to the watchlist.")
                 st.rerun()
@@ -245,11 +326,7 @@ def page_search() -> None:
     for company in companies:
         with st.container(border=True):
             show_company(company)
-            if st.button(
-                "Remove from watchlist",
-                key=f"remove-{company['number']}",
-                use_container_width=True,
-            ):
+            if st.button("Remove from watchlist", key=f"remove-{company['number']}", use_container_width=True):
                 remove_from_watchlist(company["number"])
                 st.rerun()
 
@@ -267,11 +344,84 @@ def page_company_details() -> None:
     st.title(selected["name"])
     show_company(selected)
 
-    if selected["source"].startswith("Companies House"):
-        if st.button("Refresh company profile from Companies House", use_container_width=True):
-            refreshed = normalise_profile(companies_house_get(f"/company/{selected['number']}"))
-            st.session_state.company_cache[selected["number"]] = refreshed
-            st.rerun()
+    if not companies_house_api_key():
+        st.warning("Add a Companies House API key to load live details, officers, PSCs, and filings.")
+        return
+
+    if st.button("Refresh company profile from Companies House", use_container_width=True):
+        refreshed = normalise_profile(companies_house_get(f"/company/{selected['number']}"))
+        st.session_state.company_cache[selected["number"]] = refreshed
+        st.rerun()
+
+    try:
+        officers = fetch_officers(selected["number"])
+        pscs = fetch_pscs(selected["number"])
+        filings = fetch_filing_history(selected["number"])
+    except RuntimeError as exc:
+        st.error(str(exc))
+        return
+
+    st.subheader("Five years of financial filings")
+    financial_filings = accounts_filings_for_last_five_years(filings)
+    if not financial_filings:
+        st.write("No accounts filings found in the last five years.")
+    for filing in financial_filings:
+        st.write(f"Date submitted: {filing.get('date', 'Unknown')}")
+        st.write(f"Type: {filing.get('type', 'Unknown')}")
+        st.write(f"Description: {filing_description(filing)}")
+        url = public_document_url(selected["number"], filing)
+        if url:
+            st.markdown(f'<a href="{html.escape(url)}" target="_blank">Open accounts document in new window</a>', unsafe_allow_html=True)
+        st.divider()
+
+    st.subheader("Director and officer details")
+    if not officers:
+        st.write("No officers returned.")
+    for officer in officers:
+        st.write(f"Name: {officer.get('name', 'Unknown')}")
+        st.write(f"Role: {officer.get('officer_role', 'Unknown')}")
+        st.write(f"Appointed: {officer.get('appointed_on', 'Unknown')}")
+        st.write(f"Resigned: {officer.get('resigned_on', 'Current')}")
+        st.write(f"Occupation: {officer.get('occupation', 'Not shown')}")
+        st.write(f"Nationality: {officer.get('nationality', 'Not shown')}")
+        st.write(f"Country of residence: {officer.get('country_of_residence', 'Not shown')}")
+        st.write(f"Date of birth: {format_month_year(officer.get('date_of_birth'))}")
+        st.write(f"Address: {format_address(officer.get('address'))}")
+        st.divider()
+
+    st.subheader("Shareholder and control details")
+    st.write("Companies House public data shows PSC/control information rather than a full shareholder register.")
+    if not pscs:
+        st.write("No persons with significant control returned.")
+    for psc in pscs:
+        st.write(f"Name: {psc.get('name', 'Unknown')}")
+        st.write(f"Kind: {psc.get('kind', 'Unknown')}")
+        st.write(f"Notified: {psc.get('notified_on', 'Unknown')}")
+        st.write(f"Ceased: {psc.get('ceased_on', 'Current')}")
+        st.write(f"Country of residence: {psc.get('country_of_residence', 'Not shown')}")
+        st.write(f"Nationality: {psc.get('nationality', 'Not shown')}")
+        st.write(f"Address: {format_address(psc.get('address'))}")
+        natures = psc.get("natures_of_control", [])
+        if natures:
+            st.write("Nature of control:")
+            for nature in natures:
+                st.write(f"- {nature}")
+        st.divider()
+
+    st.subheader("All Companies House documents")
+    if not filings:
+        st.write("No filing history documents returned.")
+    for filing in filings:
+        st.write(f"Date submitted: {filing.get('date', 'Unknown')}")
+        st.write(f"Type: {filing.get('type', 'Unknown')}")
+        st.write(f"Category: {filing.get('category', 'Unknown')}")
+        st.write(f"Description: {filing_description(filing)}")
+        url = public_document_url(selected["number"], filing)
+        if url:
+            st.markdown(f'<a href="{html.escape(url)}" target="_blank">Open document in new window</a>', unsafe_allow_html=True)
+        else:
+            st.write("No public document link available for this filing.")
+        st.divider()
 
 
 def page_compare() -> None:
@@ -305,10 +455,7 @@ def main() -> None:
     init_state()
 
     st.sidebar.title("Menu")
-    page = st.sidebar.radio(
-        "Go to",
-        ["Search and watchlist", "Company details", "Compare", "Alerts"],
-    )
+    page = st.sidebar.radio("Go to", ["Search and watchlist", "Company details", "Compare", "Alerts"])
     st.sidebar.write("UK-first prototype")
     st.sidebar.write(f"Session date: {date.today().strftime('%d %b %Y')}")
 
