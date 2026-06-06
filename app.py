@@ -21,6 +21,8 @@ st.set_page_config(
 )
 
 COMPANIES_HOUSE_BASE_URL = "https://api.company-information.service.gov.uk"
+LOGO_LINK = "https://chatgpt.com/g/g-69836fdd94248191b7205b1db0d90905-your-business-sale-advisor"
+LOGO_IMAGE_BASE64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCwsPDg0QFCEVFBISFCgdHhghMCoyMS8qLi00O0tANDhHOS0uQllCR05QVFVUMz9dY1xSYktTVFH/2wBDAQ4PDxQRFCcVFSdRNi42UVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVH/wAARCAB4AHgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDp6KKKyNAooooGFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAABZgAMknAFaraav2XaD++HO71Pp9KraWu69BP8Kk/wBP61t1SRDZzFFWdQXZeyAdDg1WpFBRRRSGFFFFABRRRQAUUUUAFFFFAD4E82ZIycBjjNaDaSP4Jj/wIVmoxSRXHVSDXRRuskaup4IzVJEydjHgEljeIZlKq3ylu2K26huIUuIWicZB/Q+tZH2m4aEWvfdsz3PbFPYW4rrJe3UjRDIz17AVZTSRwXmOfQCr1vCkEQjQYA/U+tOlkWKNnbooyadu4X7HPyoI5XjBztOM0yldi7sx6scmkqCgooopDCiiigAooooAKKKKACrFpePanGN0Z6r/AIVXopiNpNStnXJcofRhWeJIv7T8zcPL37s/596q0U2wSsbT6jaqOHLH0UGs67u3uflxtQdF9arUUXuCVgooopDCiiikAUUUUAFA5YD1OKKUcMp9CKALElqimURz7niGWUrjj61FDCJEeSR9kaYycZyfQVNeXTySyIsmYs8Y70yFke3kt3fZkhlYjjPoaYhJYFEImik8yMnaflwQaIoEaDzZZSil9gwucH39KdKUitTAkokZn3Er0AFOtnCRgx3AifPzrJ90imBXVQ06oGyGYLuA9+tOaNEuGjdyFDEFgM/pTy0f20Onyp5gOfQZplwwa4lKnILkg/jSAklggjiVvPYl1yvyYzUaRbreWXdjy9vHrk06ZgYbdQclUwfaiN1FnOmfmYrgevNADVi327yq3zIRlcdj3olhEcMTlvmcE7cdvWnWjqk2H/1bja/0NJdSCW4Zl+4MKv0FADxBAkUbyzshcEgBM96gONx2nK54PrV1JyLeJY7mOPaCCGGT1+lUn++3Ibk8joaGCEooooGFFFHJ4HJPQUgFwcA4ODwD60oR3+4jNjrgZrQnt2Fs0O0bYlDIc9Tzu/nVGB3SRdjsuWGdpxnmmK41o5E5eNlHqRim1Yu3c3MqF2KhjgE8Cq9ACkFTggg+hFABOSATjk4HSr+7bsv2GcRYPu/SmXCfZoJQvSaTI/3ev9aLBcphWc4VSx9AM0FShwylT6EYqzGxj093jJV/MAZh1Ax/jRIxk09HkJZxIQrHqRj/ABoArqjsuVRiPUCm1oWuDaRL5zxbpSAV7n0qpcPvuZG2bMt900WC5GUYNs2ndnG3HNIQQcEEH3rTmAFxcGFt1wRkcdBjkD3rL60AncWiiikMKVWKOrrwynINJRQA5JXScyq2JDk7vrTRwQR2OaKKYhXdndnY5LHJNJRRSAeZZPJ8rd8md2PekeR5FQM2QgwvsKbRTAfDLLC26NyM9fQ0TTSTMDI2SOB7UykoAfvbyxHn5Q24D3okdpX3SHLHvim0UASGaQzedu/eZznFMZizFicknJpKKQBRRRQMKKKKACiiigAooooAKKKKACiiigAooopiCiiikAUUUUDP/9k="
 
 SAMPLE_COMPANIES: list[dict[str, Any]] = [
     {
@@ -56,6 +58,17 @@ SAMPLE_COMPANIES: list[dict[str, Any]] = [
 ]
 
 
+def render_logo() -> None:
+    st.markdown(
+        f"""
+        <a href="{LOGO_LINK}" target="_blank">
+            <img src="data:image/jpeg;base64,{LOGO_IMAGE_BASE64}" alt="Positive at Work logo" width="120">
+        </a>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def init_state() -> None:
     st.session_state.setdefault("watchlist", [])
     st.session_state.setdefault("company_cache", {})
@@ -63,7 +76,13 @@ def init_state() -> None:
 
 
 def companies_house_api_key() -> str:
-    return "192c9ef2-ccf3-40f8-82b8-e7dcef5a5d5d"
+    try:
+        if "COMPANIES_HOUSE_API_KEY" in st.secrets:
+            return str(st.secrets["COMPANIES_HOUSE_API_KEY"])
+    except Exception:
+        pass
+    return os.getenv("COMPANIES_HOUSE_API_KEY", "")
+
 
 def companies_house_get(endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
     api_key = companies_house_api_key()
@@ -117,7 +136,15 @@ def normalise_profile(profile: dict[str, Any]) -> dict[str, Any]:
 def format_address(address: dict[str, Any] | None) -> str:
     if not address:
         return "No address returned"
-    fields = ["premises", "address_line_1", "address_line_2", "locality", "region", "postal_code", "country"]
+    fields = [
+        "premises",
+        "address_line_1",
+        "address_line_2",
+        "locality",
+        "region",
+        "postal_code",
+        "country",
+    ]
     return ", ".join(str(address.get(field)) for field in fields if address.get(field))
 
 
@@ -127,7 +154,7 @@ def format_month_year(value: dict[str, Any] | None) -> str:
     month = value.get("month")
     year = value.get("year")
     if month and year:
-        return f"{int(month):02d}/{year}"
+        return f"{month:02d}/{year}"
     return str(year or "Not shown")
 
 
@@ -154,12 +181,18 @@ def public_document_url(company_number: str, filing: dict[str, Any]) -> str:
 
 
 def fetch_officers(company_number: str) -> list[dict[str, Any]]:
-    data = companies_house_get(f"/company/{company_number}/officers", {"items_per_page": 100})
+    data = companies_house_get(
+        f"/company/{company_number}/officers",
+        {"items_per_page": 100},
+    )
     return data.get("items", [])
 
 
 def fetch_pscs(company_number: str) -> list[dict[str, Any]]:
-    data = companies_house_get(f"/company/{company_number}/persons-with-significant-control", {"items_per_page": 100})
+    data = companies_house_get(
+        f"/company/{company_number}/persons-with-significant-control",
+        {"items_per_page": 100},
+    )
     return data.get("items", [])
 
 
@@ -210,8 +243,15 @@ def search_companies(query: str) -> list[dict[str, Any]]:
 
     if companies_house_api_key():
         try:
-            data = companies_house_get("/search/companies", {"q": term, "items_per_page": 100})
-            return [normalise_search_result(item) for item in data.get("items", []) if item.get("company_number")]
+            data = companies_house_get(
+                "/search/companies",
+                {"q": term, "items_per_page": 100},
+            )
+            return [
+                normalise_search_result(item)
+                for item in data.get("items", [])
+                if item.get("company_number")
+            ]
         except RuntimeError as exc:
             st.session_state.last_search_error = str(exc)
 
@@ -268,7 +308,9 @@ def add_to_watchlist(company: dict[str, Any]) -> None:
 
 
 def remove_from_watchlist(company_number: str) -> None:
-    st.session_state.watchlist = [number for number in st.session_state.watchlist if number != company_number]
+    st.session_state.watchlist = [
+        number for number in st.session_state.watchlist if number != company_number
+    ]
 
 
 def show_company(company: dict[str, Any]) -> None:
@@ -305,7 +347,11 @@ def page_search() -> None:
             already_watched = company["number"] in st.session_state.watchlist
             if already_watched:
                 st.button("Already in watchlist", disabled=True, use_container_width=True)
-            elif st.button("Add this company to watchlist", key=f"add-{company['number']}", use_container_width=True):
+            elif st.button(
+                "Add this company to watchlist",
+                key=f"add-{company['number']}",
+                use_container_width=True,
+            ):
                 add_to_watchlist(company)
                 st.success(f"Added {company['name']} to the watchlist.")
                 st.rerun()
@@ -320,7 +366,11 @@ def page_search() -> None:
     for company in companies:
         with st.container(border=True):
             show_company(company)
-            if st.button("Remove from watchlist", key=f"remove-{company['number']}", use_container_width=True):
+            if st.button(
+                "Remove from watchlist",
+                key=f"remove-{company['number']}",
+                use_container_width=True,
+            ):
                 remove_from_watchlist(company["number"])
                 st.rerun()
 
@@ -365,7 +415,10 @@ def page_company_details() -> None:
         st.write(f"Description: {filing_description(filing)}")
         url = public_document_url(selected["number"], filing)
         if url:
-            st.markdown(f'<a href="{html.escape(url)}" target="_blank">Open accounts document in new window</a>', unsafe_allow_html=True)
+            st.markdown(
+                f'<a href="{html.escape(url)}" target="_blank">Open accounts document in new window</a>',
+                unsafe_allow_html=True,
+            )
         st.divider()
 
     st.subheader("Director and officer details")
@@ -412,7 +465,10 @@ def page_company_details() -> None:
         st.write(f"Description: {filing_description(filing)}")
         url = public_document_url(selected["number"], filing)
         if url:
-            st.markdown(f'<a href="{html.escape(url)}" target="_blank">Open document in new window</a>', unsafe_allow_html=True)
+            st.markdown(
+                f'<a href="{html.escape(url)}" target="_blank">Open document in new window</a>',
+                unsafe_allow_html=True,
+            )
         else:
             st.write("No public document link available for this filing.")
         st.divider()
@@ -448,8 +504,21 @@ def page_alerts() -> None:
 def main() -> None:
     init_state()
 
+    render_logo()
+
     st.sidebar.title("Menu")
-    page = st.sidebar.radio("Go to", ["Search and watchlist", "Company details", "Compare", "Alerts"])
+    st.sidebar.markdown(
+        f"""
+        <a href="{LOGO_LINK}" target="_blank">
+            <img src="data:image/jpeg;base64,{LOGO_IMAGE_BASE64}" alt="Positive at Work logo" width="90">
+        </a>
+        """,
+        unsafe_allow_html=True,
+    )
+    page = st.sidebar.radio(
+        "Go to",
+        ["Search and watchlist", "Company details", "Compare", "Alerts"],
+    )
     st.sidebar.write("UK-first prototype")
     st.sidebar.write(f"Session date: {date.today().strftime('%d %b %Y')}")
 
