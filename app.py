@@ -114,9 +114,7 @@ def init_state() -> None:
 
 
 def companies_house_api_key() -> str:
-    if "COMPANIES_HOUSE_API_KEY" in st.secrets:
-        return str(st.secrets["COMPANIES_HOUSE_API_KEY"])
-    return os.getenv("COMPANIES_HOUSE_API_KEY", "")
+    return "192c9ef2-ccf3-40f8-82b8-e7dcef5a5d5d"
 
 
 def company_by_number(company_number: str) -> dict[str, Any]:
