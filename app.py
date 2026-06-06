@@ -1,16 +1,13 @@
 from __future__ import annotations
 
 from datetime import date
+import os
 from typing import Any
 
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(
-    page_title="Positive Company Signals",
-    page_icon="PCS",
-    layout="centered",
-)
+st.set_page_config(page_title="Positive Company Signals", page_icon="PCS", layout="centered")
 
 COMPANIES: list[dict[str, Any]] = [
     {
@@ -33,20 +30,9 @@ COMPANIES: list[dict[str, Any]] = [
         ],
         "directors": ["Amelia Price", "Kieran Walsh", "Meera Shah"],
         "shareholders": ["Price Family Holdings 42%", "Greenline Ventures LLP 28%", "Employee option pool 9%"],
-        "filings": [
-            "28 May 2026: Full accounts filed",
-            "11 May 2026: Appointment of Meera Shah as director",
-            "02 Apr 2026: New fixed and floating charge registered",
-        ],
-        "signals": [
-            "Company website: New battery storage project approved in Cheshire",
-            "LinkedIn: Hiring for commercial finance lead",
-            "X: Industry event partnership announced",
-        ],
-        "alerts": [
-            "Director appointment detected",
-            "New news item matched relevance threshold",
-        ],
+        "filings": ["28 May 2026: Full accounts filed", "11 May 2026: Appointment of Meera Shah as director", "02 Apr 2026: New fixed and floating charge registered"],
+        "signals": ["Company website: New battery storage project approved in Cheshire", "LinkedIn: Hiring for commercial finance lead", "X: Industry event partnership announced"],
+        "alerts": ["Director appointment detected", "New news item matched relevance threshold"],
     },
     {
         "number": "09876543",
@@ -68,14 +54,8 @@ COMPANIES: list[dict[str, Any]] = [
         ],
         "directors": ["Oliver Grant", "Sofia Bennett"],
         "shareholders": ["Grant Bennett Partners 61%", "Southgate Growth Fund 24%"],
-        "filings": [
-            "01 Jun 2026: Satisfaction of charge registered",
-            "19 Apr 2026: Confirmation statement with updates",
-        ],
-        "signals": [
-            "Company website: Launch of public-sector analytics practice",
-            "Glassdoor: Employee review trend improving",
-        ],
+        "filings": ["01 Jun 2026: Satisfaction of charge registered", "19 Apr 2026: Confirmation statement with updates"],
+        "signals": ["Company website: Launch of public-sector analytics practice", "Glassdoor: Employee review trend improving"],
         "alerts": ["Charge satisfaction registered"],
     },
     {
@@ -98,14 +78,8 @@ COMPANIES: list[dict[str, Any]] = [
         ],
         "directors": ["Daniel Moore", "Priya Nair"],
         "shareholders": ["Cobalt Holdings Ltd 88%", "Priya Nair 6%"],
-        "filings": [
-            "20 May 2026: Accounts filed with lower EBITDA margin",
-            "14 Mar 2026: No individual PSC changes",
-        ],
-        "signals": [
-            "LinkedIn: Recruitment campaign for senior carers",
-            "X: Local authority contract mentioned",
-        ],
+        "filings": ["20 May 2026: Accounts filed with lower EBITDA margin", "14 Mar 2026: No individual PSC changes"],
+        "signals": ["LinkedIn: Recruitment campaign for senior carers", "X: Local authority contract mentioned"],
         "alerts": ["Accounts filed with margin movement"],
     },
     {
@@ -128,24 +102,21 @@ COMPANIES: list[dict[str, Any]] = [
         ],
         "directors": ["Rachel Evans", "Martin Hughes", "Lucy Chen"],
         "shareholders": ["Keystone Employee Trust 31%", "Alderbank Capital 22%", "Public float 47%"],
-        "filings": [
-            "03 Jun 2026: Director resignation effective 30 June",
-            "12 May 2026: Accounts deadline risk approaching",
-        ],
-        "signals": [
-            "News: Supplier dispute reported by trade press",
-            "Glassdoor: Reviews mention overtime and plant utilisation",
-        ],
-        "alerts": [
-            "Accounts deadline risk approaching",
-            "Trade press article matched high relevance",
-        ],
+        "filings": ["03 Jun 2026: Director resignation effective 30 June", "12 May 2026: Accounts deadline risk approaching"],
+        "signals": ["News: Supplier dispute reported by trade press", "Glassdoor: Reviews mention overtime and plant utilisation"],
+        "alerts": ["Accounts deadline risk approaching", "Trade press article matched high relevance"],
     },
 ]
 
 
 def init_state() -> None:
     st.session_state.setdefault("watchlist", [COMPANIES[0]["number"], COMPANIES[1]["number"]])
+
+
+def companies_house_api_key() -> str:
+    if "COMPANIES_HOUSE_API_KEY" in st.secrets:
+        return str(st.secrets["COMPANIES_HOUSE_API_KEY"])
+    return os.getenv("COMPANIES_HOUSE_API_KEY", "")
 
 
 def company_by_number(company_number: str) -> dict[str, Any]:
@@ -172,13 +143,7 @@ def search_companies(query: str) -> list[dict[str, Any]]:
     term = query.strip().lower()
     if not term:
         return []
-    return [
-        company
-        for company in COMPANIES
-        if term in company["name"].lower()
-        or term in company["number"]
-        or term in company["sic"].lower()
-    ]
+    return [company for company in COMPANIES if term in company["name"].lower() or term in company["number"] or term in company["sic"].lower()]
 
 
 def add_company(company_number: str) -> None:
@@ -187,9 +152,7 @@ def add_company(company_number: str) -> None:
 
 
 def remove_company(company_number: str) -> None:
-    st.session_state.watchlist = [
-        number for number in st.session_state.watchlist if number != company_number
-    ]
+    st.session_state.watchlist = [number for number in st.session_state.watchlist if number != company_number]
 
 
 def show_company_summary(company: dict[str, Any]) -> None:
@@ -207,46 +170,30 @@ def show_company_summary(company: dict[str, Any]) -> None:
 def page_watchlist() -> None:
     st.title("Positive Company Signals")
     st.write("Search Companies House by company name and add companies to your watchlist.")
-
     st.subheader("Search Companies House")
-    query = st.text_input(
-        "Company name",
-        placeholder="Try Northstar, Harbour, Cobalt, or Keystone",
-    )
+    query = st.text_input("Company name", placeholder="Try Northstar, Harbour, Cobalt, or Keystone")
     results = search_companies(query)
-
     if query and not results:
         st.warning("No matching sample company records found.")
-
     for company in results:
         with st.container(border=True):
             show_company_summary(company)
             already_watched = company["number"] in st.session_state.watchlist
             if already_watched:
                 st.button("Already in watchlist", disabled=True, use_container_width=True)
-            elif st.button(
-                "Add company to watchlist",
-                key=f"add-{company['number']}",
-                use_container_width=True,
-            ):
+            elif st.button("Add company to watchlist", key=f"add-{company['number']}", use_container_width=True):
                 add_company(company["number"])
                 st.success(f"Added {company['name']} to the watchlist.")
                 st.rerun()
-
     st.divider()
     st.subheader("Your watchlist")
     watched = watched_companies()
     if not watched:
         st.info("Your watchlist is empty.")
-
     for company in watched:
         with st.container(border=True):
             show_company_summary(company)
-            if st.button(
-                "Remove from watchlist",
-                key=f"remove-{company['number']}",
-                use_container_width=True,
-            ):
+            if st.button("Remove from watchlist", key=f"remove-{company['number']}", use_container_width=True):
                 remove_company(company["number"])
                 st.rerun()
 
@@ -256,14 +203,11 @@ def page_company() -> None:
     if not watched:
         st.warning("Add a company to your watchlist first.")
         return
-
     selected_name = st.selectbox("Choose a watched company", [company["name"] for company in watched])
     company = company_by_name(selected_name)
     latest = financial_frame(company).iloc[-1]
-
     st.title(company["name"])
     st.write(company["summary"])
-
     st.subheader("Company record")
     st.write(f"Company number: {company['number']}")
     st.write(f"Status: {company['status']}")
@@ -271,31 +215,20 @@ def page_company() -> None:
     st.write(f"Incorporated: {company['incorporated']}")
     st.write(f"SIC: {company['sic']}")
     st.write(f"Registered office: {company['address']}")
-
     st.subheader("Latest financials")
-    st.write(f"Turnover: {money(latest['turnover'])}")
-    st.write(f"Gross profit: {money(latest['gross_profit'])}")
-    st.write(f"EBITDA: {money(latest['ebitda'])}")
-    st.write(f"Cash: {money(latest['cash'])}")
-    st.write(f"Total assets: {money(latest['assets'])}")
-    st.write(f"Total liabilities: {money(latest['liabilities'])}")
-    st.write(f"Net assets: {money(latest['net_assets'])}")
-
+    for label in ["turnover", "gross_profit", "ebitda", "cash", "assets", "liabilities", "net_assets"]:
+        st.write(f"{label.replace('_', ' ').title()}: {money(latest[label])}")
     st.subheader("Financial trend")
     st.line_chart(financial_frame(company)[["assets", "liabilities", "net_assets"]])
-
     st.subheader("Directors")
     for director in company["directors"]:
         st.write(f"- {director}")
-
     st.subheader("Shareholders")
     for shareholder in company["shareholders"]:
         st.write(f"- {shareholder}")
-
     st.subheader("Recent filings")
     for filing in company["filings"]:
         st.write(f"- {filing}")
-
     st.subheader("News and social signals")
     for signal in company["signals"]:
         st.write(f"- {signal}")
@@ -307,15 +240,11 @@ def page_alerts() -> None:
     if not watched:
         st.info("No companies are currently watched.")
         return
-
     st.write("Last checked: Saturday 6 June 2026")
     st.write("Next check: Saturday 13 June 2026")
-
     for company in watched:
         st.subheader(company["name"])
-        if not company["alerts"]:
-            st.write("No alerts.")
-        for alert in company["alerts"]:
+        for alert in company["alerts"] or ["No alerts."]:
             st.write(f"- {alert}")
 
 
@@ -325,50 +254,28 @@ def page_compare() -> None:
     if len(watched) < 2:
         st.warning("Add at least two companies to compare.")
         return
-
-    selected = st.multiselect(
-        "Choose up to four companies",
-        [company["name"] for company in watched],
-        default=[company["name"] for company in watched[: min(4, len(watched))]],
-        max_selections=4,
-    )
+    selected = st.multiselect("Choose up to four companies", [company["name"] for company in watched], default=[company["name"] for company in watched[: min(4, len(watched))]], max_selections=4)
     if not selected:
         st.info("Choose at least one company.")
         return
-
     rows = []
     for name in selected:
         company = company_by_name(name)
         latest = financial_frame(company).iloc[-1]
-        rows.append(
-            {
-                "Company": company["name"],
-                "Risk": company["risk"],
-                "Turnover": latest["turnover"],
-                "Gross profit": latest["gross_profit"],
-                "EBITDA": latest["ebitda"],
-                "Cash": latest["cash"],
-                "Assets": latest["assets"],
-                "Liabilities": latest["liabilities"],
-                "Net assets": latest["net_assets"],
-            }
-        )
-
+        rows.append({"Company": company["name"], "Risk": company["risk"], "Turnover": latest["turnover"], "Gross profit": latest["gross_profit"], "EBITDA": latest["ebitda"], "Cash": latest["cash"], "Assets": latest["assets"], "Liabilities": latest["liabilities"], "Net assets": latest["net_assets"]})
     st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
 
 def main() -> None:
     init_state()
-
     st.sidebar.title("Menu")
-    page = st.sidebar.radio(
-        "Go to",
-        ["Search and watchlist", "Company details", "Alerts", "Compare"],
-    )
-
+    page = st.sidebar.radio("Go to", ["Search and watchlist", "Company details", "Alerts", "Compare"])
     st.sidebar.write("UK-first prototype")
     st.sidebar.write(f"Session date: {date(2026, 6, 6).strftime('%d %b %Y')}")
-
+    if companies_house_api_key():
+        st.sidebar.success("Companies House API key configured")
+    else:
+        st.sidebar.warning("Companies House API key not configured")
     if page == "Search and watchlist":
         page_watchlist()
     elif page == "Company details":
