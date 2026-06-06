@@ -39,12 +39,12 @@ COMPANIES_HOUSE_API_KEY = "paste-your-real-api-key-here"
 
 The `.streamlit/secrets.toml` file is ignored by Git so the key stays local to the Pi.
 
-The app uses realistic sample UK company data so the Companies House search and watchlist flow works without API keys. The code is structured so live Companies House, news, social, and Glassdoor providers can be connected later.
+When `COMPANIES_HOUSE_API_KEY` is configured, the search screen uses the live Companies House `/search/companies` endpoint and lets the user add a returned company to the watchlist. If the key is missing or the API call fails, the app falls back to realistic sample UK company data.
 
 ## Included MVP Flow
 
-- Search Companies House-style records by company name and add companies to a saved watchlist
-- Company overview with Companies House-style facts, financials, filings, officers, shareholders, news, social, and Glassdoor signals
-- In-app alerts for company record and content changes
-- Four-company comparison across P&L, balance sheet, and recent activity
-- Weekly email preview for the Saturday monitoring cycle
+- Search live Companies House company records by company name
+- Choose a returned company and add it to a watchlist
+- View basic company details from the watchlist
+- Compare watched companies in a simple table
+- Keep the UI bare bones so all text remains visible
