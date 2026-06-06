@@ -20,6 +20,25 @@ streamlit run app.py --server.address 0.0.0.0 --server.port 8501
 
 Then open `http://<pi-ip-address>:8501` from another device on the same network.
 
+## Companies House API Key
+
+Do not commit your real API key to GitHub.
+
+On the Pi, create this file:
+
+```bash
+mkdir -p .streamlit
+nano .streamlit/secrets.toml
+```
+
+Add your key like this:
+
+```toml
+COMPANIES_HOUSE_API_KEY = "paste-your-real-api-key-here"
+```
+
+The `.streamlit/secrets.toml` file is ignored by Git so the key stays local to the Pi.
+
 The app uses realistic sample UK company data so the Companies House search and watchlist flow works without API keys. The code is structured so live Companies House, news, social, and Glassdoor providers can be connected later.
 
 ## Included MVP Flow
