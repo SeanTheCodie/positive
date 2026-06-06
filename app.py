@@ -63,13 +63,7 @@ def init_state() -> None:
 
 
 def companies_house_api_key() -> str:
-    try:
-        if "COMPANIES_HOUSE_API_KEY" in st.secrets:
-            return str(st.secrets["COMPANIES_HOUSE_API_KEY"])
-    except Exception:
-        pass
-    return os.getenv("COMPANIES_HOUSE_API_KEY", "")
-
+    return "192c9ef2-ccf3-40f8-82b8-e7dcef5a5d5d"
 
 def companies_house_get(endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
     api_key = companies_house_api_key()
